@@ -7,9 +7,6 @@ const exphbs = require('express-handlebars')
 const port = process.argv.slice(2)[0];
 const app = express();
 
-//const tipService = process.env.GREETING_SERVICE;
-const greetingService = 'http://localhost:8080';
-
 app.engine('.hbs', exphbs({
   defaultLayout: 'main',
   extname: '.hbs',
@@ -21,8 +18,8 @@ app.set('views', path.join(__dirname, 'views'))
 app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
-  console.log('hitting index path');
-  http.get(greetingService, (resp) => {
+  console.log('GET /');
+  http.get(process.env.GREETING_SERVICE, (resp) => {
     let data = '';
 
     resp.on('data', (chunk) => {
@@ -30,20 +27,23 @@ app.get('/', (req, res) => {
     });
 
     resp.on('end', () => {
+      var greetingResponse = JSON.parse(data)
       res.render('home', {
-        message: "hello",
-        color: "orange",
+        message: greetingResponse.Message,
+        color: greetingResponse.Color,
       })
       console.log(JSON.parse(data));
     });
   }).on("error", (err) => {
     console.log("Error: " + err.message);
+    res.render('home', {
+      message: "ERROR: SERVICE UNREACHABLE.",
+      color: "",
+    })
   });
 
 
 });
-
-app.use('/img', express.static(path.join(__dirname,'img')));
 
 console.log(`Service listening on port ${port}`);
 app.listen(port);
