@@ -1,0 +1,42 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-greeting
+  labels:
+    app: node-greeting
+    version: v1
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: node-greeting
+        version: v1
+    spec:
+      containers:
+      - name: node-greeting
+        image: michellenoorali/node-greeting:1.0.0
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 8081
+        env:
+          - name: GREETING_SERVICE
+            value: greeting-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-greeting
+  labels:
+    app: node-greeting
+    service: node-greeting
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 8081
+    name: http
+  selector:
+    app: node-greeting
+    version: v1
+---
